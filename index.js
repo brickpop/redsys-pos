@@ -1,7 +1,7 @@
 var crypto = require('crypto');
 var Buffer = require('buffer').Buffer;
 var MCrypt = require('mcrypt').MCrypt;
-const { CURRENCIES, TRANSACTION_TYPES } = require('./lib.js');
+const { CURRENCIES, TRANSACTION_TYPES, ERROR_CODES } = require('./lib.js');
 
 var config = {
     initialized: false,
@@ -12,6 +12,7 @@ var config = {
 
 exports.CURRENCIES = CURRENCIES;
 exports.TRANSACTION_TYPES = TRANSACTION_TYPES;
+exports.ERROR_CODES = ERROR_CODES;
 
 exports.initialize = function (merchantSecretKey) {
     if (!merchantSecretKey) throw new Error("The merchant secret key is mandatory");
