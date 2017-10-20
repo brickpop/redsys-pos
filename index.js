@@ -27,7 +27,7 @@ function makeTransactionKey(orderRef) {
     crypt.open(Buffer.from(config.MERCHANT_SECRET_KEY, "base64"), iv);
 
     var ciphertext = crypt.encrypt(orderRef);
-    var encodedKey = Buffer.concat([ciphertext]).toString('base64');
+    // var encodedKey = Buffer.concat([ciphertext]).toString('base64');
     return ciphertext;
 }
 
@@ -72,4 +72,30 @@ exports.makePaymentParameters = function ({ amount, orderReference, merchantName
         Ds_MerchantParameters: payloadBuffer.toString('base64'),
         Ds_Signature: signature
     };
+}
+
+function decodeResponseParameters (payload) {
+    if (typeof payload != "string") throw new Error("Payload must be a base-64 encoded string");
+    const result = Buffer.from(payload, "base64").toString();
+    return JSON.parse(result);
+}
+
+exports.checkResponseParameters = function(strPayload, givenSignature){
+    if (!config.initialized) throw new Error("You must initialize your secret key first");
+
+    const payload = decodeResponseParameters(strPayload);
+
+    var crypt = new MCrypt('tripledes', 'cbc');
+    let iv = Buffer.alloc(8);
+    crypt.open(Buffer.from(config.MERCHANT_SECRET_KEY, "base64"), iv);
+
+    var encryptedDsOrder = crypt.encrypt(payload.Ds_Order);
+    
+    const hash = crypto.createHmac('sha256', encryptedDsOrder);
+    hash.update(strPayload);
+
+    const localSignature = hash.digest('base64');
+
+    if(localSignature == givenSignature.replace(/-/g, '+').replace(/_/g, '/')) return payload;
+    else return null;
 }
