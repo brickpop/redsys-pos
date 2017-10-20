@@ -1,0 +1,22 @@
+{
+  "name": "sabadell-pos",
+  "version": "0.1.0",
+  "description": "Node JS library to ease the communication between an e-commerce and Banc Sabadell",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [
+    "sabadell",
+    "tpv",
+    "pos",
+    "payment",
+    "wrapper",
+    "library",
+    "api"
+  ],
+  "author": "Joel Moreno <joel@tvrbo.pro>, Jordi Moraleda <jordi@tvrbo.pro>",
+  "license": "MIT",
+  "dependencies": {
+    "mcrypt": "^0.1.13"
+  },
+  "devDependencies": {}
+}
