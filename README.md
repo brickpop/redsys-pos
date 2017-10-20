@@ -11,6 +11,8 @@ npm install sabadell-pos
 ```
 
 ## Usage
+### Generating a request
+
 Generate the parameters to create a transaction:
 
 ```
@@ -56,3 +58,53 @@ Send the above JSON to the client app, and submit an HTML form like below:
     </form>
 ```
 
+### Checking a response
+
+```
+// Check a response
+const merchantParams = "eyJEc19EYXRlIjoiMjAlMkYxMCUyRjIwMTciLCJEc19Ib3VyIjoiMTclM0EyMyIsIkRzX1NlY3VyZVBheW1lbnQiOiIwIiwiRHNfQW1vdW50IjoiMTAwIiwiRHNfQ3VycmVuY3kiOiI5NzgiLCJEc19PcmRlciI6IjAwMDA5NjU1RDg0IiwiRHNfTWVyY2hhbnRDb2RlIjoiMzI3MjM0Njg4IiwiRHNfVGVybWluYWwiOiIwMDEiLCJEc19SZXNwb25zZSI6Ijk5MTUiLCJEc19UcmFuc2FjdGlvblR5cGUiOiIwIiwiRHNfTWVyY2hhbnREYXRhIjoiIiwiRHNfQXV0aG9yaXNhdGlvbkNvZGUiOiIrKysrKysiLCJEc19Db25zdW1lckxhbmd1YWdlIjoiMSJ9";
+const signature = "vrUsaNbxfonyn4ONUos6oosUaTBY0_SGoKDel6qsHqk=";
+
+result = sabadellPOS.checkResponseParameters(merchantParams, signature);
+console.log(result);
+```
+
+If successful, this will print:
+
+```
+{
+  Ds_Date: '20%2F10%2F2017',
+  Ds_Hour: '18%3A20',
+  Ds_SecurePayment: '1',
+  Ds_Amount: '100',
+  Ds_Currency: '978',
+  Ds_Order: '00007921799',
+  Ds_MerchantCode: '327234688',
+  Ds_Terminal: '001',
+  Ds_Response: '0000',
+  Ds_TransactionType: '0',
+  Ds_MerchantData: '',
+  Ds_AuthorisationCode: '678746',
+  Ds_ConsumerLanguage: '1',
+  Ds_Card_Country: '724',
+  Ds_Card_Brand: '1'
+}
+```
+
+### Checking an invalid response/signature
+If an invalid response or signature is provided:
+
+```
+// Check a response
+const merchantParams = "eyJEc19EYXRlIjoiMjAlMkYxMCUyRjIwMTciLCJEc19Ib3VyIjoiMTclM0EyMyIsIkRzX1NlY3VyZVBheW1lbnQiOiIwIiwiRHNfQW1vdW50IjoiMTAwIiwiRHNfQ3VycmVuY3kiOiI5NzgiLCJEc19PcmRlciI6IjAwMDA5NjU1RDg0IiwiRHNfTWVyY2hhbnRDb2RlIjoiMzI3MjM0Njg4IiwiRHNfVGVybWluYWwiOiIwMDEiLCJEc19SZXNwb25zZSI6Ijk5MTUiLCJEc19UcmFuc2FjdGlvblR5cGUiOiIwIiwiRHNfTWVyY2hhbnREYXRhIjoiIiwiRHNfQXV0aG9yaXNhdGlvbkNvZGUiOiIrKysrKysiLCJEc19Db25zdW1lckxhbmd1YWdlIjoiMSJ9";
+const invalidSignature = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=";
+
+result = sabadellPOS.checkResponseParameters(merchantParams, invalidSignature);
+console.log(result);
+```
+
+This will print:
+
+```
+null
+```

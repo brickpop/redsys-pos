@@ -81,9 +81,12 @@ function decodeResponseParameters (payload) {
 }
 
 exports.checkResponseParameters = function(strPayload, givenSignature){
-    if (!config.initialized) throw new Error("You must initialize your secret key first");
+    if (!config.initialized) throw new Error("You must initialize the component first");
+    else if (!strPayload) throw new Error("The payload is required");
+    else if (!givenSignature) throw new Error("The signature is required");;
 
     const payload = decodeResponseParameters(strPayload);
+    if (!payload || !payload.Ds_Order) return null; // invalid response
 
     var crypt = new MCrypt('tripledes', 'cbc');
     let iv = Buffer.alloc(8);
