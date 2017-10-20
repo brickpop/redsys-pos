@@ -58,6 +58,8 @@ Send the above JSON to the client app, and submit an HTML form like below:
     </form>
 ```
 
+For a programatic example, check out the third example on `example/frontend.html`;
+
 ### Checking a response
 
 ```

@@ -62,8 +62,106 @@
                     <input type="submit" value="Submit form" class="btn btn-success" />
                 </form>
             </div>
+            <div class="col-12">
+                <hr>
+                <h4>AJAX (sandbox)</h4>
+                <p>Below is a Javascript function to perform post the form programatically as well as an example invocation</p>
+
+                <pre>
+// Form submit emulator
+
+function formPost(path, params, method = "post") {
+    if (typeof document == "undefined") throw new Error("This function is only available in browsers");
+            
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+            
+    for (var key in params) {
+        if (params.hasOwnProperty(key)) {
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", key);
+            hiddenField.setAttribute("value", params[key]);
+            
+            form.appendChild(hiddenField);
+        }
+    }
+            
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Event handler
+
+function buttonClicked() {
+    // sandbox
+    var URL = "https://sis-t.redsys.es:25443/sis/realizarPago";
+
+    // production
+    // var URL = "https://sis.redsys.es/sis/realizarPago";
+
+    var payload = {
+        Ds_SignatureVersion: "HMAC_SHA256_V1",
+        Ds_MerchantParameters: "eyJEU19NRVJDSEFOVF9BTU9VTlQiOiIxNDUiLCJEU19NRVJDSEFOVF9PUkRFUiI6IjE1MDg0MjgzNjAiLCJEU19NRVJDSEFOVF9NRVJDSEFOVENPREUiOiIzMjcyMzQ2ODgiLCJEU19NRVJDSEFOVF9DVVJSRU5DWSI6Ijk3OCIsIkRTX01FUkNIQU5UX1RSQU5TQUNUSU9OVFlQRSI6IjAiLCJEU19NRVJDSEFOVF9URVJNSU5BTCI6IjEiLCJEU19NRVJDSEFOVF9NRVJDSEFOVFVSTCI6IiIsIkRTX01FUkNIQU5UX1VSTE9LIjoiIiwiRFNfTUVSQ0hBTlRfVVJMS08iOiIifQ==",
+        Ds_Signature: "2wzHhG3STJg6m3DTlvf74JHBXp5MI7Ey+scuClRcEzg="
+    };
+
+    formPost(URL, payload);
+
+    // this will leave the page
+}
+
+                </pre>
+
+                <input type="submit" id="ajax" onclick="ajaxSubmit()" value="Submit transaction" class="btn btn-info" />
+                <p>&nbsp;</p>
+            </div>
         </div>
     </div>
+
+    <script>
+        function formPost(path, params, method = "post") {
+            if (typeof document == "undefined") throw new Error("This function is only available in browsers");
+
+            var form = document.createElement("form");
+            form.setAttribute("method", method);
+            form.setAttribute("action", path);
+
+            for (var key in params) {
+                if (params.hasOwnProperty(key)) {
+                    var hiddenField = document.createElement("input");
+                    hiddenField.setAttribute("type", "hidden");
+                    hiddenField.setAttribute("name", key);
+                    hiddenField.setAttribute("value", params[key]);
+
+                    form.appendChild(hiddenField);
+                }
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function ajaxSubmit() {
+            // sandbox
+            var URL = "https://sis-t.redsys.es:25443/sis/realizarPago";
+
+            // production
+            // var URL = "https://sis.redsys.es/sis/realizarPago";
+
+            var payload = {
+                Ds_SignatureVersion: "HMAC_SHA256_V1",
+                Ds_MerchantParameters: "eyJEU19NRVJDSEFOVF9BTU9VTlQiOiIxNDUiLCJEU19NRVJDSEFOVF9PUkRFUiI6IjE1MDg0MjgzNjAiLCJEU19NRVJDSEFOVF9NRVJDSEFOVENPREUiOiIzMjcyMzQ2ODgiLCJEU19NRVJDSEFOVF9DVVJSRU5DWSI6Ijk3OCIsIkRTX01FUkNIQU5UX1RSQU5TQUNUSU9OVFlQRSI6IjAiLCJEU19NRVJDSEFOVF9URVJNSU5BTCI6IjEiLCJEU19NRVJDSEFOVF9NRVJDSEFOVFVSTCI6IiIsIkRTX01FUkNIQU5UX1VSTE9LIjoiIiwiRFNfTUVSQ0hBTlRfVVJMS08iOiIifQ==",
+                Ds_Signature: "2wzHhG3STJg6m3DTlvf74JHBXp5MI7Ey+scuClRcEzg="
+            };
+
+            formPost(URL, payload);
+
+            // this will leave the page
+        }
+
+    </script>
 </body>
 
 </html>
