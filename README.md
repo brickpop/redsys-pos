@@ -3,6 +3,13 @@ Sabadell POS
 
 Node JS library to ease the communication between an e-commerce and Banc Sabadell
 
+## Installation
+
+Install the NPM package:
+```
+npm install sabadell-pos
+```
+
 ## Usage
 Generate the parameters to create a transaction:
 
