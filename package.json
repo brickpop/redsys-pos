@@ -1,6 +1,6 @@
 {
   "name": "sabadell-pos",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Node JS library to ease the communication between an e-commerce and Banc Sabadell",
   "main": "index.js",
   "scripts": {},
