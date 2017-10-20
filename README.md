@@ -16,7 +16,7 @@ npm install sabadell-pos
 Generate the parameters to create a transaction:
 
 ```
-var sabadellPOS = require('..');
+var sabadellPOS = require('sabadell-pos');
 
 const TESTING_MERCHANT_KEY = "sq7HjrUOBfKmC576ILgskD5srU870gJ7";
 sabadellPOS.initialize(TESTING_MERCHANT_KEY);
