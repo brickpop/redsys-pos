@@ -105,3 +105,13 @@ exports.checkResponseParameters = function(strPayload, givenSignature){
     if(localSignature == givenSignature.replace(/-/g, '+').replace(/_/g, '/')) return payload;
     else return null;
 }
+
+exports.getResponseCodeMessage = function(code){
+    if(!code || typeof code !== "string") return null;
+    code = code.replace(/^0*/, '');
+    
+    if(APPROVAL_CODES[code]) return APPROVAL_CODES[code];
+    else if(TRANSACTION_ERROR_CODES[code]) return TRANSACTION_ERROR_CODES[code];
+    else if(SIS_ERROR_CODES[code]) return SIS_ERROR_CODES[code];
+    else return null;
+}

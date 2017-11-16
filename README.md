@@ -110,3 +110,29 @@ This will print:
 ```
 null
 ```
+
+### Checking a response code
+
+```javascript
+var str = sabadellPOS.getResponseCodeMessage("0180");
+console.log(str);
+```
+
+This will print:
+
+```
+Operación no permitida para ese tipo de tarjeta.
+```
+
+### Checking an invalid response code
+
+```javascript
+var str = sabadellPOS.getResponseCodeMessage("xyz");
+console.log(str);
+```
+
+This will print:
+
+```
+null
+```
