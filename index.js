@@ -1,7 +1,7 @@
 var crypto = require('crypto');
 var Buffer = require('buffer').Buffer;
 var MCrypt = require('mcrypt').MCrypt;
-const { CURRENCIES, TRANSACTION_TYPES, SIS_ERROR_CODES } = require('./lib.js');
+const { CURRENCIES, TRANSACTION_TYPES, APPROVAL_CODES, TRANSACTION_ERROR_CODES, SIS_ERROR_CODES } = require('./lib.js');
 
 var config = {
     initialized: false,
@@ -12,6 +12,8 @@ var config = {
 
 exports.CURRENCIES = CURRENCIES;
 exports.TRANSACTION_TYPES = TRANSACTION_TYPES;
+exports.APPROVAL_CODES = APPROVAL_CODES;
+exports.TRANSACTION_ERROR_CODES = TRANSACTION_ERROR_CODES;
 exports.SIS_ERROR_CODES = SIS_ERROR_CODES;
 
 exports.initialize = function (merchantSecretKey) {
