@@ -1,13 +1,13 @@
-Sabadell POS
+RedSys POS
 ---
 
-Node JS library to ease the communication between an e-commerce and Banc Sabadell
+NodeJS library to ease the communication with RedSys point of sales
 
 ## Installation
 
 Install the NPM package:
 ```
-npm install sabadell-pos
+npm install redsys-pos
 ```
 
 ## Usage
@@ -16,29 +16,34 @@ npm install sabadell-pos
 Generate the parameters to create a transaction:
 
 ```javascript
-var sabadellPOS = require('sabadell-pos');
+const {
+    initialize,
+    makePaymentParameters,
+    CURRENCIES,
+    TRANSACTION_TYPES
+} = require('redsys-pos');
 
-const TESTING_MERCHANT_KEY = "sq7HjrUOBfKmC576ILgskD5srU870gJ7";
-sabadellPOS.initialize(TESTING_MERCHANT_KEY);
+const MERCHANT_KEY = "sq7HjrUOBfKmC576ILgskD5srU870gJ7"; // TESTING KEY
+initialize(MERCHANT_KEY);
 
 var obj = {
     amount: '100', // cents (in euro)
     orderReference: '1508428360',
     merchantName: "INTEGRATION TEST SHOP",
     merchantCode: '327234688',
-    currency: sabadellPOS.CURRENCIES.EUR,
-    transactionType: sabadellPOS.TRANSACTION_TYPES.AUTHORIZATION, // '0'
+    currency: CURRENCIES.EUR,
+    transactionType: TRANSACTION_TYPES.AUTHORIZATION, // '0'
     terminal: '1',
     merchantURL: 'http://www.my-shop.com/',
     successURL: 'http://localhost:8080/success',
     errorURL: 'http://localhost:8080/error'
 }
 
-const result = sabadellPOS.makePaymentParameters(obj);
+const result = makePaymentParameters(obj);
 console.log(result);
 ```
 
-This will print:
+The above code will print:
 
 ```javascript
 {
@@ -48,7 +53,47 @@ This will print:
 }
 ```
 
-Send the above JSON to the client app, and submit an HTML form like below:
+Send the above JSON to the browser, and submit a form like below:
+
+```javascript
+const DEBUG = ...;
+var result = { ... }; // The response above from the server
+
+var form = document.createElement("form");
+if(DEBUG) {
+    form.setAttribute("action", "https://sis-t.redsys.es:25443/sis/realizarPago")
+} else {
+    form.setAttribute("action", "https://sis.redsys.es/sis/realizarPago")
+}
+form.setAttribute("method", "POST");
+form.setAttribute("style", "display: none");
+
+// Parameters
+var field = document.createElement("input");
+field.setAttribute("type", "hidden");
+field.setAttribute("name", "Ds_SignatureVersion");
+field.setAttribute("value", result.Ds_SignatureVersion);
+form.appendChild(field);
+
+var field = document.createElement("input");
+field.setAttribute("type", "hidden");
+field.setAttribute("name", "Ds_MerchantParameters");
+field.setAttribute("value", result.Ds_MerchantParameters);
+form.appendChild(field);
+
+var field = document.createElement("input");
+field.setAttribute("type", "hidden");
+field.setAttribute("name", "Ds_Signature");
+field.setAttribute("value", result.Ds_Signature);
+form.appendChild(field);
+
+document.body.appendChild(form);
+form.submit();
+```
+
+For a detailed example, check out `example/frontend.html`;
+
+The official recommended mechanism is a plain old HTML form as below, which is an equivalent of the JS code above:
 
 ```html
     <form name="from" action="https://sis-t.redsys.es:25443/sis/realizarPago" method="POST">
@@ -58,16 +103,16 @@ Send the above JSON to the client app, and submit an HTML form like below:
     </form>
 ```
 
-For a programatic example, check out the third example on `example/frontend.html`;
-
 ### Checking a response
 
 ```javascript
 // Check a response
+const { checkResponseParameters } = require("redsys-pos");
+
 const merchantParams = "eyJEc19EYXRlIjoiMjAlMkYxMCUyRjIwMTciLCJEc19Ib3VyIjoiMTclM0EyMyIsIkRzX1NlY3VyZVBheW1lbnQiOiIwIiwiRHNfQW1vdW50IjoiMTAwIiwiRHNfQ3VycmVuY3kiOiI5NzgiLCJEc19PcmRlciI6IjAwMDA5NjU1RDg0IiwiRHNfTWVyY2hhbnRDb2RlIjoiMzI3MjM0Njg4IiwiRHNfVGVybWluYWwiOiIwMDEiLCJEc19SZXNwb25zZSI6Ijk5MTUiLCJEc19UcmFuc2FjdGlvblR5cGUiOiIwIiwiRHNfTWVyY2hhbnREYXRhIjoiIiwiRHNfQXV0aG9yaXNhdGlvbkNvZGUiOiIrKysrKysiLCJEc19Db25zdW1lckxhbmd1YWdlIjoiMSJ9";
 const signature = "vrUsaNbxfonyn4ONUos6oosUaTBY0_SGoKDel6qsHqk=";
 
-result = sabadellPOS.checkResponseParameters(merchantParams, signature);
+const result = checkResponseParameters(merchantParams, signature);
 console.log(result);
 ```
 
@@ -98,10 +143,12 @@ If an invalid response or signature is provided:
 
 ```javascript
 // Check a response
+const { checkResponseParameters } = require("redsys-pos");
+
 const merchantParams = "eyJEc19EYXRlIjoiMjAlMkYxMCUyRjIwMTciLCJEc19Ib3VyIjoiMTclM0EyMyIsIkRzX1NlY3VyZVBheW1lbnQiOiIwIiwiRHNfQW1vdW50IjoiMTAwIiwiRHNfQ3VycmVuY3kiOiI5NzgiLCJEc19PcmRlciI6IjAwMDA5NjU1RDg0IiwiRHNfTWVyY2hhbnRDb2RlIjoiMzI3MjM0Njg4IiwiRHNfVGVybWluYWwiOiIwMDEiLCJEc19SZXNwb25zZSI6Ijk5MTUiLCJEc19UcmFuc2FjdGlvblR5cGUiOiIwIiwiRHNfTWVyY2hhbnREYXRhIjoiIiwiRHNfQXV0aG9yaXNhdGlvbkNvZGUiOiIrKysrKysiLCJEc19Db25zdW1lckxhbmd1YWdlIjoiMSJ9";
 const invalidSignature = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=";
 
-result = sabadellPOS.checkResponseParameters(merchantParams, invalidSignature);
+result = checkResponseParameters(merchantParams, invalidSignature);
 console.log(result);
 ```
 
@@ -114,7 +161,9 @@ null
 ### Checking a response code
 
 ```javascript
-var str = sabadellPOS.getResponseCodeMessage("0180");
+const { getResponseCodeMessage } = require("redsys-pos");
+
+var str = getResponseCodeMessage("0180");
 console.log(str);
 ```
 
@@ -127,7 +176,9 @@ Operación no permitida para ese tipo de tarjeta.
 ### Checking an invalid response code
 
 ```javascript
-var str = sabadellPOS.getResponseCodeMessage("xyz");
+const { getResponseCodeMessage } = require("redsys-pos");
+
+var str = getResponseCodeMessage("xyz");
 console.log(str);
 ```
 
@@ -136,3 +187,7 @@ This will print:
 ```
 null
 ```
+
+## About
+
+The present library is a work of Jordi Moraleda and Joel Moreno

@@ -6,8 +6,8 @@ const { CURRENCIES, TRANSACTION_TYPES, APPROVAL_CODES, TRANSACTION_ERROR_CODES, 
 var config = {
     initialized: false,
     MERCHANT_SECRET_KEY: '', //base64
-    SABADELL_TEST_URL: 'https://sis-t.redsys.es:25443/sis/realizarPago',
-    SABADELL_URL: 'https://sis.redsys.es/sis/realizarPago'
+    SANDBOX_URL: 'https://sis-t.redsys.es:25443/sis/realizarPago',
+    PRODUCTION_URL: 'https://sis.redsys.es/sis/realizarPago'
 };
 
 exports.CURRENCIES = CURRENCIES;
@@ -30,7 +30,6 @@ function makeTransactionKey(orderRef) {
     crypt.open(Buffer.from(config.MERCHANT_SECRET_KEY, "base64"), iv);
 
     var ciphertext = crypt.encrypt(orderRef);
-    // var encodedKey = Buffer.concat([ciphertext]).toString('base64');
     return ciphertext;
 }
 
@@ -77,13 +76,13 @@ exports.makePaymentParameters = function ({ amount, orderReference, merchantName
     };
 }
 
-function decodeResponseParameters (payload) {
+function decodeResponseParameters(payload) {
     if (typeof payload != "string") throw new Error("Payload must be a base-64 encoded string");
     const result = Buffer.from(payload, "base64").toString();
     return JSON.parse(result);
 }
 
-exports.checkResponseParameters = function(strPayload, givenSignature){
+exports.checkResponseParameters = function (strPayload, givenSignature) {
     if (!config.initialized) throw new Error("You must initialize the component first");
     else if (!strPayload) throw new Error("The payload is required");
     else if (!givenSignature) throw new Error("The signature is required");;
@@ -96,22 +95,22 @@ exports.checkResponseParameters = function(strPayload, givenSignature){
     crypt.open(Buffer.from(config.MERCHANT_SECRET_KEY, "base64"), iv);
 
     var encryptedDsOrder = crypt.encrypt(payload.Ds_Order);
-    
+
     const hash = crypto.createHmac('sha256', encryptedDsOrder);
     hash.update(strPayload);
 
     const localSignature = hash.digest('base64');
 
-    if(localSignature == givenSignature.replace(/-/g, '+').replace(/_/g, '/')) return payload;
+    if (localSignature == givenSignature.replace(/-/g, '+').replace(/_/g, '/')) return payload;
     else return null;
 }
 
-exports.getResponseCodeMessage = function(code){
-    if(!code || typeof code !== "string") return null;
+exports.getResponseCodeMessage = function (code) {
+    if (!code || typeof code !== "string") return null;
     code = code.replace(/^0*/, '');
-    
-    if(APPROVAL_CODES[code]) return APPROVAL_CODES[code];
-    else if(TRANSACTION_ERROR_CODES[code]) return TRANSACTION_ERROR_CODES[code];
-    else if(SIS_ERROR_CODES[code]) return SIS_ERROR_CODES[code];
+
+    if (APPROVAL_CODES[code]) return APPROVAL_CODES[code];
+    else if (TRANSACTION_ERROR_CODES[code]) return TRANSACTION_ERROR_CODES[code];
+    else if (SIS_ERROR_CODES[code]) return SIS_ERROR_CODES[code];
     else return null;
 }

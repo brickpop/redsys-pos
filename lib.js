@@ -74,9 +74,9 @@ exports.TRANSACTION_ERROR_CODES = {
     "502": "La conciliación no ha sido aceptada porque no se ha localizado la operación original, o bien, porque el banco emisor no ha dado respuesta dentro del time-out predefinido.",
     "503": "La conciliación no ha sido aceptada porque no se ha localizado la operación original, o bien, porque el banco emisor no ha dado respuesta dentro del time-out predefinido.",
 
-    // CODIGOS DE ERROR ENVIADOS POR LA PROPIA PLATAFORMA DE PAGOS DE BANCO SABADELL
-    "904": "Hay un problema en la configuración del código de comercio. Contactar con Banco Sabadell para solucionarlo.",
-    "909": "Error en la estabilidad de la plataforma de pagos de Banco Sabadell o en la de los sistemas de intercambio de Visa o MasterCard.",
+    // CODIGOS DE ERROR ENVIADOS POR LA PROPIA PLATAFORMA DE PAGOS DE REDSYS
+    "904": "Hay un problema en la configuración del código de comercio. Contactar con RedSys para solucionarlo.",
+    "909": "Error en la estabilidad de la plataforma de pagos de RedSys o en la de los sistemas de intercambio de Visa o MasterCard.",
     "912": "El centro autorizador del banco emisor no está operativo en estos momentos. ",
     "913": "Se ha procesado recientemente una transacción con el mismo número de pedido (Ds_Merchant_Order).",
     "916": "No es posible operar con este importe.",
@@ -102,7 +102,7 @@ exports.TRANSACTION_ERROR_CODES = {
     "9218": "La entrada Operaciones no permite operaciones Seguras",
     "9253": "Tarjeta no cumple con el check-digit (posición 16 del número de tarjeta calculada según algoritmo de Luhn). ",
     "9256": "La tarjeta no puede hacer Preautorizaciones",
-    "9261": "La transacción excede el límite operativo establecido por Banco Sabadell ",
+    "9261": "La transacción excede el límite operativo establecido por RedSys ",
     "9912": "El centro autorizador del banco emisor no está  operativo en estos momentos.",
     "9913": "Error en la confirmación que el comercio envía al TPV Virtual (solo aplicable en la opción de sincronización SOAP) ",
     "9914": "Confirmación “KO” del comercio (solo aplicable en la opción de sincronización SOAP)",

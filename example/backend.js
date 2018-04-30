@@ -1,15 +1,15 @@
-var sabadellPOS = require('..');
+var redsysPos = require('..');
 
-const TESTING_MERCHANT_KEY = "sq7HjrUOBfKmC576ILgskD5srU870gJ7";
-sabadellPOS.initialize(TESTING_MERCHANT_KEY);
+const MERCHANT_KEY = "sq7HjrUOBfKmC576ILgskD5srU870gJ7";
+redsysPos.initialize(MERCHANT_KEY);
 
 var obj = {
     amount: '100', // cents
     orderReference: '1508428360',
     merchantName: "INTEGRATION TEST SHOP",
     merchantCode: '327234688',
-    currency: sabadellPOS.CURRENCIES.EUR,
-    transactionType: sabadellPOS.TRANSACTION_TYPES.AUTHORIZATION,
+    currency: redsysPos.CURRENCIES.EUR,
+    transactionType: redsysPos.TRANSACTION_TYPES.AUTHORIZATION,
     terminal: '1',
     merchantURL: 'http://www.my-shop.com/',
     successURL: 'http://localhost:8080/success',
@@ -17,7 +17,7 @@ var obj = {
 }
 
 // Make a payment
-var result = sabadellPOS.makePaymentParameters(obj);
+var result = redsysPos.makePaymentParameters(obj);
 console.log(`makePaymentParameters():
 ${JSON.stringify(result, null, 2)}
 
@@ -28,11 +28,11 @@ const merchantParams = "eyJEc19EYXRlIjoiMjAlMkYxMCUyRjIwMTciLCJEc19Ib3VyIjoiMTcl
 const signature = "vrUsaNbxfonyn4ONUos6oosUaTBY0_SGoKDel6qsHqk=";
 const invalidSignature = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=";
 
-result = sabadellPOS.checkResponseParameters(merchantParams, signature);
+result = redsysPos.checkResponseParameters(merchantParams, signature);
 console.log(`VALID checkResponseParameters():
 ${JSON.stringify(result, null, 2)}
 `);
 
-result = sabadellPOS.checkResponseParameters(merchantParams, invalidSignature);
+result = redsysPos.checkResponseParameters(merchantParams, invalidSignature);
 console.log(`INVALID checkResponseParameters():
 ${JSON.stringify(result, null, 2)}`);

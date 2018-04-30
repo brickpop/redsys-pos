@@ -1,12 +1,13 @@
 {
-  "name": "sabadell-pos",
-  "version": "0.2.5",
-  "description": "Node JS library to ease the communication between an e-commerce and Banc Sabadell",
+  "name": "redsys-pos",
+  "version": "0.9.0",
+  "description": "Node JS library to ease the communication with RedSys point of sales",
   "main": "index.js",
   "scripts": {},
   "keywords": [
     "redsys",
     "sabadell",
+    "caixabank",
     "tpv",
     "pos",
     "payment",
