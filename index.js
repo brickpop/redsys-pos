@@ -71,19 +71,19 @@ exports.makePaymentParameters = function ({ amount, orderReference, merchantName
 
   const payload = JSON.stringify(paramsObj)
   const payloadBuffer = new Buffer(payload)
-  const payloadBase = payloadBuffer.toString('base64')
+  const Ds_MerchantParameters = payloadBuffer.toString('base64')
   const derivateKey = encryptOrder(orderReference)
 
   const hexMac256 = crypto.createHmac('sha256', new Buffer(derivateKey, 'base64'))
-    .update(payloadBase)
+    .update(Ds_MerchantParameters)
     .digest('hex')
-  const signature = new Buffer(hexMac256, 'hex').toString('base64')
+  const Ds_Signature = new Buffer(hexMac256, 'hex').toString('base64')
 
 
   return {
     Ds_SignatureVersion: "HMAC_SHA256_V1",
-    Ds_MerchantParameters: payloadBuffer.toString('base64'),
-    Ds_Signature: signature
+    Ds_MerchantParameters,
+    Ds_Signature
   }
 }
 
