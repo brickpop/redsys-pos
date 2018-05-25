@@ -191,3 +191,5 @@ null
 ## About
 
 The present library is a work of Jordi Moraleda and Joel Moreno
+
+Node.js "crypto" implementation by Josep Subils

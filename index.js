@@ -1,116 +1,123 @@
-var crypto = require('crypto');
-var Buffer = require('buffer').Buffer;
-var MCrypt = require('mcrypt').MCrypt;
-const { CURRENCIES, TRANSACTION_TYPES, APPROVAL_CODES, TRANSACTION_ERROR_CODES, SIS_ERROR_CODES } = require('./lib.js');
+var crypto = require('crypto')
+var Buffer = require('buffer').Buffer
+const { CURRENCIES, TRANSACTION_TYPES, APPROVAL_CODES, TRANSACTION_ERROR_CODES, SIS_ERROR_CODES } = require('./lib.js')
 
-var config = {
-    initialized: false,
-    MERCHANT_SECRET_KEY: '', //base64
-    SANDBOX_URL: 'https://sis-t.redsys.es:25443/sis/realizarPago',
-    PRODUCTION_URL: 'https://sis.redsys.es/sis/realizarPago'
-};
-
-exports.CURRENCIES = CURRENCIES;
-exports.TRANSACTION_TYPES = TRANSACTION_TYPES;
-exports.APPROVAL_CODES = APPROVAL_CODES;
-exports.TRANSACTION_ERROR_CODES = TRANSACTION_ERROR_CODES;
-exports.SIS_ERROR_CODES = SIS_ERROR_CODES;
-
-exports.initialize = function (merchantSecretKey) {
-    if (!merchantSecretKey) throw new Error("The merchant secret key is mandatory");
-    config.MERCHANT_SECRET_KEY = merchantSecretKey;
-    config.initialized = true;
+function zeroPad(buf, blocksize) {
+  if (typeof buf === 'string') {
+    buf = new Buffer(buf, 'utf8')
+  }
+  var pad = new Buffer((blocksize - (buf.length % blocksize)) % blocksize)
+  pad.fill(0)
+  return Buffer.concat([buf, pad])
 }
 
-function makeTransactionKey(orderRef) {
-    if (!config.initialized) throw new Error("You must initialize your secret key first");
+function encryptOrder (orderRef) {
+  if (!config.initialized) throw new Error("You must initialize your secret key first")
+  const secretKey = new Buffer(config.MERCHANT_SECRET_KEY, 'base64')
+  const iv = new Buffer(8)
+  iv.fill(0)
+  const cipher = crypto.createCipheriv('des-ede3-cbc', secretKey, iv)
+  cipher.setAutoPadding(false)
+  const zerores = zeroPad(orderRef, 8)
+  console.log(zerores)
+  const res = cipher.update(zerores, 'utf8', 'base64') + cipher.final('base64')
+  return res
+}
 
-    var crypt = new MCrypt('tripledes', 'cbc');
-    let iv = Buffer.alloc(8);
-    crypt.open(Buffer.from(config.MERCHANT_SECRET_KEY, "base64"), iv);
+var config = {
+  initialized: false,
+  MERCHANT_SECRET_KEY: '', //base64
+  SANDBOX_URL: 'https://sis-t.redsys.es:25443/sis/realizarPago',
+  PRODUCTION_URL: 'https://sis.redsys.es/sis/realizarPago'
+}
 
-    var ciphertext = crypt.encrypt(orderRef);
-    return ciphertext;
+exports.CURRENCIES = CURRENCIES
+exports.TRANSACTION_TYPES = TRANSACTION_TYPES
+exports.APPROVAL_CODES = APPROVAL_CODES
+exports.TRANSACTION_ERROR_CODES = TRANSACTION_ERROR_CODES
+exports.SIS_ERROR_CODES = SIS_ERROR_CODES
+
+exports.initialize = function (merchantSecretKey) {
+  if (!merchantSecretKey) throw new Error("The merchant secret key is mandatory")
+  config.MERCHANT_SECRET_KEY = merchantSecretKey
+  config.initialized = true
 }
 
 exports.makePaymentParameters = function ({ amount, orderReference, merchantName, merchantCode, currency, transactionType, terminal = "1", merchantURL, successURL, errorURL }) {
-    if (!amount) throw new Error("The amount to charge is mandatory");
-    if (!merchantCode) throw new Error("The merchant code is mandatory");
-    if (!transactionType) throw new Error("The transcation type is mandatory");
-    if (!successURL) throw new Error("The successURL is mandatory");
-    if (!errorURL) throw new Error("The errorURL is mandatory");
+  if (!amount) throw new Error("The amount to charge is mandatory")
+  if (!merchantCode) throw new Error("The merchant code is mandatory")
+  if (!transactionType) throw new Error("The transcation type is mandatory")
+  if (!successURL) throw new Error("The successURL is mandatory")
+  if (!errorURL) throw new Error("The errorURL is mandatory")
 
-    if (!currency) currency = CURRENCIES.EUR;
-    if (!orderReference) {
-        orderReference = Date.now();
-        console.log("Warning: no orderReference provided. Using", orderReference);
-    }
+  if (!currency) currency = CURRENCIES.EUR
+  if (!orderReference) {
+    orderReference = Date.now()
+    console.log("Warning: no orderReference provided. Using", orderReference)
+  }
 
-    const paramsObj = {
-        DS_MERCHANT_AMOUNT: String(amount),
-        DS_MERCHANT_ORDER: orderReference,
-        DS_MERCHANT_MERCHANTNAME: merchantName,
-        DS_MERCHANT_MERCHANTCODE: merchantCode,
-        DS_MERCHANT_CURRENCY: currency,
-        DS_MERCHANT_TRANSACTIONTYPE: transactionType,
-        DS_MERCHANT_TERMINAL: terminal,
-        DS_MERCHANT_MERCHANTURL: merchantURL || '',
-        DS_MERCHANT_URLOK: successURL || '',
-        DS_MERCHANT_URLKO: errorURL || ''
-    }
+  const paramsObj = {
+    DS_MERCHANT_AMOUNT: String(amount),
+    DS_MERCHANT_ORDER: orderReference,
+    DS_MERCHANT_MERCHANTNAME: merchantName,
+    DS_MERCHANT_MERCHANTCODE: merchantCode,
+    DS_MERCHANT_CURRENCY: currency,
+    DS_MERCHANT_TRANSACTIONTYPE: transactionType,
+    DS_MERCHANT_TERMINAL: terminal,
+    DS_MERCHANT_MERCHANTURL: merchantURL || '',
+    DS_MERCHANT_URLOK: successURL || '',
+    DS_MERCHANT_URLKO: errorURL || ''
+  }
 
-    const payload = JSON.stringify(paramsObj);
-    const payloadBuffer = new Buffer(payload);
+  const payload = JSON.stringify(paramsObj)
+  const payloadBuffer = new Buffer(payload)
+  const payloadBase = payloadBuffer.toString('base64')
+  const derivateKey = encryptOrder(orderReference)
 
-    const derivateKey = makeTransactionKey(orderReference);
+  const hexMac256 = crypto.createHmac('sha256', new Buffer(derivateKey, 'base64'))
+    .update(payloadBase)
+    .digest('hex')
+  const signature = new Buffer(hexMac256, 'hex').toString('base64')
 
-    const hash = crypto.createHmac('sha256', derivateKey);
-    hash.update(payloadBuffer.toString('base64'));
 
-    const signature = hash.digest('base64');
-
-    return {
-        Ds_SignatureVersion: "HMAC_SHA256_V1",
-        Ds_MerchantParameters: payloadBuffer.toString('base64'),
-        Ds_Signature: signature
-    };
+  return {
+    Ds_SignatureVersion: "HMAC_SHA256_V1",
+    Ds_MerchantParameters: payloadBuffer.toString('base64'),
+    Ds_Signature: signature
+  }
 }
 
 function decodeResponseParameters(payload) {
-    if (typeof payload != "string") throw new Error("Payload must be a base-64 encoded string");
-    const result = Buffer.from(payload, "base64").toString();
-    return JSON.parse(result);
+  if (typeof payload != "string") throw new Error("Payload must be a base-64 encoded string")
+  const result = Buffer.from(payload, "base64").toString()
+  return JSON.parse(result)
 }
 
 exports.checkResponseParameters = function (strPayload, givenSignature) {
-    if (!config.initialized) throw new Error("You must initialize the component first");
-    else if (!strPayload) throw new Error("The payload is required");
-    else if (!givenSignature) throw new Error("The signature is required");;
+  if (!config.initialized) throw new Error("You must initialize the component first")
+  else if (!strPayload) throw new Error("The payload is required")
+  else if (!givenSignature) throw new Error("The signature is required")
 
-    const payload = decodeResponseParameters(strPayload);
-    if (!payload || !payload.Ds_Order) return null; // invalid response
+  const payload = decodeResponseParameters(strPayload)
+  if (!payload || !payload.Ds_Order) return null // invalid response
+  const derivateKey = encryptOrder(payload.Ds_Order)
 
-    var crypt = new MCrypt('tripledes', 'cbc');
-    let iv = Buffer.alloc(8);
-    crypt.open(Buffer.from(config.MERCHANT_SECRET_KEY, "base64"), iv);
+  const hexMac256 = crypto.createHmac('sha256', new Buffer(derivateKey, 'base64'))
+    .update(payload)
+    .digest('hex')
+  const signature = new Buffer(hexMac256, 'hex').toString('base64')
 
-    var encryptedDsOrder = crypt.encrypt(payload.Ds_Order);
-
-    const hash = crypto.createHmac('sha256', encryptedDsOrder);
-    hash.update(strPayload);
-
-    const localSignature = hash.digest('base64');
-
-    if (localSignature == givenSignature.replace(/-/g, '+').replace(/_/g, '/')) return payload;
-    else return null;
+  if(signature.equals(givenSignature)) return payload
+  else return null
 }
 
 exports.getResponseCodeMessage = function (code) {
-    if (!code || typeof code !== "string") return null;
-    code = code.replace(/^0*/, '');
+  if (!code || typeof code !== "string") return null
+  code = code.replace(/^0*/, '')
 
-    if (APPROVAL_CODES[code]) return APPROVAL_CODES[code];
-    else if (TRANSACTION_ERROR_CODES[code]) return TRANSACTION_ERROR_CODES[code];
-    else if (SIS_ERROR_CODES[code]) return SIS_ERROR_CODES[code];
-    else return null;
+  if (APPROVAL_CODES[code]) return APPROVAL_CODES[code]
+  else if (TRANSACTION_ERROR_CODES[code]) return TRANSACTION_ERROR_CODES[code]
+  else if (SIS_ERROR_CODES[code]) return SIS_ERROR_CODES[code]
+  else return null
 }
+
