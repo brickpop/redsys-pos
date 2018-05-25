@@ -17,26 +17,26 @@ Generate the parameters to create a transaction:
 
 ```javascript
 const {
-    initialize,
-    makePaymentParameters,
-    CURRENCIES,
-    TRANSACTION_TYPES
+  initialize,
+  makePaymentParameters,
+  CURRENCIES,
+  TRANSACTION_TYPES
 } = require('redsys-pos');
 
 const MERCHANT_KEY = "sq7HjrUOBfKmC576ILgskD5srU870gJ7"; // TESTING KEY
 initialize(MERCHANT_KEY);
 
 var obj = {
-    amount: '100', // cents (in euro)
-    orderReference: '1508428360',
-    merchantName: "INTEGRATION TEST SHOP",
-    merchantCode: '327234688',
-    currency: CURRENCIES.EUR,
-    transactionType: TRANSACTION_TYPES.AUTHORIZATION, // '0'
-    terminal: '1',
-    merchantURL: 'http://myshop.com/merchant',
-    successURL: 'http://myshop.com/success',
-    errorURL: 'http://myshop.com/error'
+  amount: '100', // cents (in euro)
+  orderReference: '1508428360',
+  merchantName: "INTEGRATION TEST SHOP",
+  merchantCode: '327234688',
+  currency: CURRENCIES.EUR,
+  transactionType: TRANSACTION_TYPES.AUTHORIZATION, // '0'
+  terminal: '1',
+  merchantURL: 'http://myshop.com/merchant',
+  successURL: 'http://myshop.com/success',
+  errorURL: 'http://myshop.com/error'
 }
 
 const result = makePaymentParameters(obj);
@@ -61,9 +61,9 @@ var result = { ... }; // The response above from the server
 
 var form = document.createElement("form");
 if(DEBUG) {
-    form.setAttribute("action", "https://sis-t.redsys.es:25443/sis/realizarPago")
+  form.setAttribute("action", "https://sis-t.redsys.es:25443/sis/realizarPago")
 } else {
-    form.setAttribute("action", "https://sis.redsys.es/sis/realizarPago")
+  form.setAttribute("action", "https://sis.redsys.es/sis/realizarPago")
 }
 form.setAttribute("method", "POST");
 form.setAttribute("style", "display: none");
@@ -96,11 +96,11 @@ For a detailed example, check out `example/frontend.html`;
 The official recommended mechanism is a plain old HTML form as below, which is an equivalent of the JS code above:
 
 ```html
-    <form name="from" action="https://sis-t.redsys.es:25443/sis/realizarPago" method="POST">
-        <input type="hidden" name="Ds_SignatureVersion" value="HMAC_SHA256_V1" />
-        <input type="hidden" name="Ds_MerchantParameters" value="eyJEU19NRVJDSEFOVF9BTU9VTlQiOiIxMDAiLCJEU19NRVJDSEFOVF9PUkRFUiI6IjE1MDg0MjgzNjAiLCJEU19NRVJDSEFOVF9NRVJDSEFOVE5BTUUiOiJUZXN0aW5nIFNob3AiLCJEU19NRVJDSEFOVF9NRVJDSEFOVENPREUiOiIzMjcyMzQ2ODgiLCJEU19NRVJDSEFOVF9DVVJSRU5DWSI6Ijk3OCIsIkRTX01FUkNIQU5UX1RSQU5TQUNUSU9OVFlQRSI6IjAiLCJEU19NRVJDSEFOVF9URVJNSU5BTCI6IjEiLCJEU19NRVJDSEFOVF9NRVJDSEFOVFVSTCI6IiIsIkRTX01FUkNIQU5UX1VSTE9LIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3N1Y2Nlc3MiLCJEU19NRVJDSEFOVF9VUkxLTyI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9lcnJvciJ9" />
-        <input type="hidden" name="Ds_Signature" value="qkMJMWR6Dq32xwbQuguTv39OvXv4KdD1Xg7pZ8phGZI=" />
-    </form>
+  <form name="from" action="https://sis-t.redsys.es:25443/sis/realizarPago" method="POST">
+  <input type="hidden" name="Ds_SignatureVersion" value="HMAC_SHA256_V1" />
+  <input type="hidden" name="Ds_MerchantParameters" value="eyJEU19NRVJDSEFOVF9BTU9VTlQiOiIxMDAiLCJEU19NRVJDSEFOVF9PUkRFUiI6IjE1MDg0MjgzNjAiLCJEU19NRVJDSEFOVF9NRVJDSEFOVE5BTUUiOiJUZXN0aW5nIFNob3AiLCJEU19NRVJDSEFOVF9NRVJDSEFOVENPREUiOiIzMjcyMzQ2ODgiLCJEU19NRVJDSEFOVF9DVVJSRU5DWSI6Ijk3OCIsIkRTX01FUkNIQU5UX1RSQU5TQUNUSU9OVFlQRSI6IjAiLCJEU19NRVJDSEFOVF9URVJNSU5BTCI6IjEiLCJEU19NRVJDSEFOVF9NRVJDSEFOVFVSTCI6IiIsIkRTX01FUkNIQU5UX1VSTE9LIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3N1Y2Nlc3MiLCJEU19NRVJDSEFOVF9VUkxLTyI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9lcnJvciJ9" />
+  <input type="hidden" name="Ds_Signature" value="qkMJMWR6Dq32xwbQuguTv39OvXv4KdD1Xg7pZ8phGZI=" />
+  </form>
 ```
 
 ### Checking a response
