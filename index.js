@@ -19,7 +19,6 @@ function encryptOrder (orderRef) {
   const cipher = crypto.createCipheriv('des-ede3-cbc', secretKey, iv)
   cipher.setAutoPadding(false)
   const zerores = zeroPad(orderRef, 8)
-  console.log(zerores)
   const res = cipher.update(zerores, 'utf8', 'base64') + cipher.final('base64')
   return res
 }
@@ -103,7 +102,7 @@ exports.checkResponseParameters = function (strPayload, givenSignature) {
   const derivateKey = encryptOrder(payload.Ds_Order)
 
   const hexMac256 = crypto.createHmac('sha256', new Buffer(derivateKey, 'base64'))
-    .update(payload)
+    .update(strPayload)
     .digest('hex')
   const signature = new Buffer(hexMac256, 'hex').toString('base64')
 
