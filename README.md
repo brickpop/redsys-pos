@@ -34,9 +34,9 @@ var obj = {
     currency: CURRENCIES.EUR,
     transactionType: TRANSACTION_TYPES.AUTHORIZATION, // '0'
     terminal: '1',
-    merchantURL: 'http://www.my-shop.com/',
-    successURL: 'http://localhost:8080/success',
-    errorURL: 'http://localhost:8080/error'
+    merchantURL: 'http://myshop.com/merchant',
+    successURL: 'http://myshop.com/success',
+    errorURL: 'http://myshop.com/error'
 }
 
 const result = makePaymentParameters(obj);
