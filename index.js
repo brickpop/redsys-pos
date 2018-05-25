@@ -106,7 +106,7 @@ exports.checkResponseParameters = function (strPayload, givenSignature) {
     .digest('hex')
   const signature = new Buffer(hexMac256, 'hex').toString('base64')
 
-  if(signature.equals(givenSignature)) return payload
+  if(signature === givenSignature.replace('_', '/')) return payload
   else return null
 }
 
