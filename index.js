@@ -2,15 +2,6 @@ var crypto = require('crypto')
 var Buffer = require('buffer').Buffer
 const { CURRENCIES, TRANSACTION_TYPES, APPROVAL_CODES, TRANSACTION_ERROR_CODES, SIS_ERROR_CODES } = require('./lib.js')
 
-function zeroPad(buf, blocksize) {
-  if (typeof buf === 'string') {
-    buf = new Buffer(buf, 'utf8')
-  }
-  var pad = new Buffer((blocksize - (buf.length % blocksize)) % blocksize)
-  pad.fill(0)
-  return Buffer.concat([buf, pad])
-}
-
 function encryptOrder (orderRef) {
   if (!config.initialized) throw new Error("You must initialize your secret key first")
   const secretKey = new Buffer(config.MERCHANT_SECRET_KEY, 'base64')
@@ -18,8 +9,8 @@ function encryptOrder (orderRef) {
   iv.fill(0)
   const cipher = crypto.createCipheriv('des-ede3-cbc', secretKey, iv)
   cipher.setAutoPadding(false)
-  const zerores = zeroPad(orderRef, 8)
-  const res = cipher.update(zerores, 'utf8', 'base64') + cipher.final('base64')
+  const orderZeroPad = orderRef.toString().padStart(5, "0")
+  const res = cipher.update(orderZeroPad, 'utf8', 'base64') + cipher.final('base64')
   return res
 }
 
