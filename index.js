@@ -1,39 +1,33 @@
-var crypto = require('crypto');
-var Buffer = require('buffer').Buffer;
-var MCrypt = require('mcrypt').MCrypt;
-const { CURRENCIES, TRANSACTION_TYPES, APPROVAL_CODES, TRANSACTION_ERROR_CODES, SIS_ERROR_CODES } = require('./lib.js');
+var crypto = require("crypto");
+const base64url = require("base64url");
+const { toBuffer } = require("./buffer-util.js");
+const {
+  CURRENCIES,
+  TRANSACTION_TYPES,
+  APPROVAL_CODES,
+  TRANSACTION_ERROR_CODES,
+  SIS_ERROR_CODES
+} = require("./lib.js");
 
-var config = {
-    initialized: false,
-    MERCHANT_SECRET_KEY: '', //base64
-    SANDBOX_URL: 'https://sis-t.redsys.es:25443/sis/realizarPago',
-    PRODUCTION_URL: 'https://sis.redsys.es/sis/realizarPago'
-};
+class RedSys {
+  constructor(merchantSecretKey) {
+    if (!merchantSecretKey)
+      throw new Error("The merchant secret key is mandatory");
+    this.merchantSecretKey = merchantSecretKey;
+  }
 
-exports.CURRENCIES = CURRENCIES;
-exports.TRANSACTION_TYPES = TRANSACTION_TYPES;
-exports.APPROVAL_CODES = APPROVAL_CODES;
-exports.TRANSACTION_ERROR_CODES = TRANSACTION_ERROR_CODES;
-exports.SIS_ERROR_CODES = SIS_ERROR_CODES;
-
-exports.initialize = function (merchantSecretKey) {
-    if (!merchantSecretKey) throw new Error("The merchant secret key is mandatory");
-    config.MERCHANT_SECRET_KEY = merchantSecretKey;
-    config.initialized = true;
-}
-
-function makeTransactionKey(orderRef) {
-    if (!config.initialized) throw new Error("You must initialize your secret key first");
-
-    var crypt = new MCrypt('tripledes', 'cbc');
-    let iv = Buffer.alloc(8);
-    crypt.open(Buffer.from(config.MERCHANT_SECRET_KEY, "base64"), iv);
-
-    var ciphertext = crypt.encrypt(orderRef);
-    return ciphertext;
-}
-
-exports.makePaymentParameters = function ({ amount, orderReference, merchantName, merchantCode, currency, transactionType, terminal = "1", merchantURL, successURL, errorURL }) {
+  makePaymentParameters({
+    amount,
+    orderReference,
+    merchantName,
+    merchantCode,
+    currency,
+    transactionType,
+    terminal = "1",
+    merchantURL,
+    successURL,
+    errorURL
+  }) {
     if (!amount) throw new Error("The amount to charge is mandatory");
     if (!merchantCode) throw new Error("The merchant code is mandatory");
     if (!transactionType) throw new Error("The transcation type is mandatory");
@@ -42,75 +36,96 @@ exports.makePaymentParameters = function ({ amount, orderReference, merchantName
 
     if (!currency) currency = CURRENCIES.EUR;
     if (!orderReference) {
-        orderReference = Date.now();
-        console.log("Warning: no orderReference provided. Using", orderReference);
+      orderReference = Date.now();
+      console.log("Warning: no orderReference provided. Using", orderReference);
     }
 
     const paramsObj = {
-        DS_MERCHANT_AMOUNT: String(amount),
-        DS_MERCHANT_ORDER: orderReference,
-        DS_MERCHANT_MERCHANTNAME: merchantName,
-        DS_MERCHANT_MERCHANTCODE: merchantCode,
-        DS_MERCHANT_CURRENCY: currency,
-        DS_MERCHANT_TRANSACTIONTYPE: transactionType,
-        DS_MERCHANT_TERMINAL: terminal,
-        DS_MERCHANT_MERCHANTURL: merchantURL || '',
-        DS_MERCHANT_URLOK: successURL || '',
-        DS_MERCHANT_URLKO: errorURL || ''
-    }
+      DS_MERCHANT_AMOUNT: String(amount),
+      DS_MERCHANT_ORDER: orderReference,
+      DS_MERCHANT_MERCHANTNAME: merchantName,
+      DS_MERCHANT_MERCHANTCODE: merchantCode,
+      DS_MERCHANT_CURRENCY: currency,
+      DS_MERCHANT_TRANSACTIONTYPE: transactionType,
+      DS_MERCHANT_TERMINAL: terminal,
+      DS_MERCHANT_MERCHANTURL: merchantURL || "",
+      DS_MERCHANT_URLOK: successURL || "",
+      DS_MERCHANT_URLKO: errorURL || ""
+    };
 
-    const payload = JSON.stringify(paramsObj);
-    const payloadBuffer = new Buffer(payload);
-
-    const derivateKey = makeTransactionKey(orderReference);
-
-    const hash = crypto.createHmac('sha256', derivateKey);
-    hash.update(payloadBuffer.toString('base64'));
-
-    const signature = hash.digest('base64');
+    const Ds_MerchantParameters = new Buffer(
+      JSON.stringify(paramsObj)
+    ).toString("base64");
+    const derivateKey = this.encrypt(orderReference);
+    const Ds_Signature = this.sign(Ds_MerchantParameters, derivateKey);
 
     return {
-        Ds_SignatureVersion: "HMAC_SHA256_V1",
-        Ds_MerchantParameters: payloadBuffer.toString('base64'),
-        Ds_Signature: signature
+      Ds_SignatureVersion: "HMAC_SHA256_V1",
+      Ds_MerchantParameters,
+      Ds_Signature
     };
-}
+  }
 
-function decodeResponseParameters(payload) {
-    if (typeof payload != "string") throw new Error("Payload must be a base-64 encoded string");
-    const result = Buffer.from(payload, "base64").toString();
-    return JSON.parse(result);
-}
+  checkResponseParameters(strPayload, givenSignature) {
+    if (!strPayload) throw new Error("The payload parameter is required");
+    else if (typeof strPayload != "string")
+      throw new Error("Payload must be a base-64 encoded string");
+    else if (!givenSignature) throw new Error("The signature is required");
 
-exports.checkResponseParameters = function (strPayload, givenSignature) {
-    if (!config.initialized) throw new Error("You must initialize the component first");
-    else if (!strPayload) throw new Error("The payload is required");
-    else if (!givenSignature) throw new Error("The signature is required");;
+    const merchantParams = JSON.parse(
+      Buffer.from(strPayload, "base64").toString()
+    );
+    if (!merchantParams || !merchantParams.Ds_Order) return null; // invalid response
 
-    const payload = decodeResponseParameters(strPayload);
-    if (!payload || !payload.Ds_Order) return null; // invalid response
+    const derivateKey = this.encrypt(merchantParams.Ds_Order);
+    const localSignature = this.sign(strPayload, derivateKey);
 
-    var crypt = new MCrypt('tripledes', 'cbc');
-    let iv = Buffer.alloc(8);
-    crypt.open(Buffer.from(config.MERCHANT_SECRET_KEY, "base64"), iv);
+    if (base64url.toBase64(givenSignature) !== localSignature) return null;
+    else return merchantParams;
+  }
 
-    var encryptedDsOrder = crypt.encrypt(payload.Ds_Order);
-
-    const hash = crypto.createHmac('sha256', encryptedDsOrder);
-    hash.update(strPayload);
-
-    const localSignature = hash.digest('base64');
-
-    if (localSignature == givenSignature.replace(/-/g, '+').replace(/_/g, '/')) return payload;
-    else return null;
-}
-
-exports.getResponseCodeMessage = function (code) {
+  getResponseCodeMessage(code) {
     if (!code || typeof code !== "string") return null;
-    code = code.replace(/^0*/, '');
+    code = code.replace(/^0*/, "");
 
     if (APPROVAL_CODES[code]) return APPROVAL_CODES[code];
-    else if (TRANSACTION_ERROR_CODES[code]) return TRANSACTION_ERROR_CODES[code];
+    else if (TRANSACTION_ERROR_CODES[code])
+      return TRANSACTION_ERROR_CODES[code];
     else if (SIS_ERROR_CODES[code]) return SIS_ERROR_CODES[code];
     else return null;
+  }
+
+  // INTERNAL UTILS
+
+  encrypt(strPayload) {
+    // 3DES (base64)
+    var keyBuffer = new Buffer(this.merchantSecretKey, "base64");
+    var iv = new Buffer(8);
+    iv.fill(0);
+    var crypt = crypto.createCipheriv("des-ede3-cbc", keyBuffer, iv);
+    crypt.setAutoPadding(false);
+    return (
+      crypt.update(toBuffer(strPayload, 8), "utf8", "base64") +
+      crypt.final("base64")
+    );
+  }
+
+  sign(strPayload, strKey) {
+    // MAC256 (base64)
+    if (typeof strPayload !== "string" || typeof strKey !== "string")
+      throw new Error("Invalid parameters");
+
+    const hash = crypto.createHmac("sha256", new Buffer(strKey, "base64"));
+    hash.update(strPayload);
+
+    return hash.digest("base64");
+  }
 }
+
+module.exports = RedSys;
+
+module.exports.CURRENCIES = CURRENCIES;
+module.exports.TRANSACTION_TYPES = TRANSACTION_TYPES;
+module.exports.APPROVAL_CODES = APPROVAL_CODES;
+module.exports.TRANSACTION_ERROR_CODES = TRANSACTION_ERROR_CODES;
+module.exports.SIS_ERROR_CODES = SIS_ERROR_CODES;
