@@ -15,10 +15,6 @@
     "library",
     "api"
   ],
-  "author": "Joel Moreno <joel@tvrbo.pro>, Jordi Moraleda <jordi@tvrbo.pro>",
-  "license": "MIT",
-  "dependencies": {
-    "mcrypt": "^0.1.13"
-  },
-  "devDependencies": {}
+  "author": "Joel Moreno <joel@tvrbo.pro>, Jordi Moraleda <jordi@tvrbo.pro>, Josep Subils <js@js.gl>",
+  "license": "MIT"
 }
