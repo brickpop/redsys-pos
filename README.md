@@ -111,8 +111,8 @@ If successful, this will print:
 
 ```javascript
 {
-    Ds_Date: '20%2F10%2F2017',
-    Ds_Hour: '17%3A23',
+    Ds_Date: '20/10/2017',
+    Ds_Hour: '17:23',
     Ds_SecurePayment: '0',
     Ds_Amount: '100',
     Ds_Currency: '978',
