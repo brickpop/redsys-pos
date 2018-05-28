@@ -113,7 +113,7 @@ exports.checkResponseParameters = function (strPayload, givenSignature) {
 exports.getResponseCodeMessage = function (code) {
   if (!code || typeof code !== "string") return null
   code = code.replace(/^0*/, '')
-
+  if (Array(100).fill(0).map((val, index) => index.toString().padStart(4, '0')).includes(code)) return "Transacción autorizada para pagos y preautorizaciones"
   if (APPROVAL_CODES[code]) return APPROVAL_CODES[code]
   else if (TRANSACTION_ERROR_CODES[code]) return TRANSACTION_ERROR_CODES[code]
   else if (SIS_ERROR_CODES[code]) return SIS_ERROR_CODES[code]

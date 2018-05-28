@@ -27,7 +27,8 @@ exports.CURRENCIES = {
 exports.APPROVAL_CODES = {
   "000": "Transacción autorizada por el banco emisor de la tarjeta",
   "001": "Código exclusivo para transacciones Verified by Visa o MasterCard SecureCode. La transacción ha sido autorizada y, además, el banco emisor nos informa que ha autenticado correctamente la identidad del titular de la tarjeta.",
-  "002": "Transacción autorizada por el banco emisor."
+  "002": "Transacción autorizada por el banco emisor.",
+  "0900": "Transacción autorizada para devoluciones y confirmaciones."
 }
 
 exports.TRANSACTION_ERROR_CODES = {
