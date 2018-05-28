@@ -84,7 +84,7 @@ class RedSys {
     else return merchantParams;
   }
 
-  getResponseCodeMessage(code) {
+  static getResponseCodeMessage(code) {
     if (!code || typeof code !== "string") return null;
     code = code.replace(/^0*/, "");
 

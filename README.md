@@ -16,15 +16,11 @@ npm install redsys-pos
 Generate the parameters to create a transaction:
 
 ```javascript
-const {
-    initialize,
-    makePaymentParameters,
-    CURRENCIES,
-    TRANSACTION_TYPES
-} = require('redsys-pos');
+const RedSys = require('redsys-pos');
+const { CURRENCIES, TRANSACTION_TYPES } = RedSys;
 
 const MERCHANT_KEY = "sq7HjrUOBfKmC576ILgskD5srU870gJ7"; // TESTING KEY
-initialize(MERCHANT_KEY);
+const redsys = new RedSys(MERCHANT_KEY);
 
 var obj = {
     amount: '100', // cents (in euro)
@@ -39,7 +35,7 @@ var obj = {
     errorURL: 'http://localhost:8080/error'
 }
 
-const result = makePaymentParameters(obj);
+const result = redsys.makePaymentParameters(obj);
 console.log(result);
 ```
 
@@ -49,7 +45,7 @@ The above code will print:
 {
   Ds_SignatureVersion: 'HMAC_SHA256_V1',
   Ds_MerchantParameters: 'eyJEU19NRVJDSEFOVF9BTU9VTlQiOiIxMDAiLCJEU19NRVJDSEFOVF9PUkRFUiI6IjE1MDg0MjgzNjAiLCJEU19NRVJDSEFOVF9NRVJDSEFOVE5BTUUiOiJUZXN0aW5nIFNob3AiLCJEU19NRVJDSEFOVF9NRVJDSEFOVENPREUiOiIzMjcyMzQ2ODgiLCJEU19NRVJDSEFOVF9DVVJSRU5DWSI6Ijk3OCIsIkRTX01FUkNIQU5UX1RSQU5TQUNUSU9OVFlQRSI6IjAiLCJEU19NRVJDSEFOVF9URVJNSU5BTCI6IjEiLCJEU19NRVJDSEFOVF9NRVJDSEFOVFVSTCI6IiIsIkRTX01FUkNIQU5UX1VSTE9LIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3N1Y2Nlc3MiLCJEU19NRVJDSEFOVF9VUkxLTyI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9lcnJvciJ9',
-  Ds_Signature: 'qkMJMWR6Dq32xwbQuguTv39OvXv4KdD1Xg7pZ8phGZI='
+  Ds_Signature: 'FebYtynNmPyRnHiUfVqCmahQjVO7DntVz8Si6e7jgig='
 }
 ```
 
@@ -69,23 +65,13 @@ form.setAttribute("method", "POST");
 form.setAttribute("style", "display: none");
 
 // Parameters
-var field = document.createElement("input");
-field.setAttribute("type", "hidden");
-field.setAttribute("name", "Ds_SignatureVersion");
-field.setAttribute("value", result.Ds_SignatureVersion);
-form.appendChild(field);
-
-var field = document.createElement("input");
-field.setAttribute("type", "hidden");
-field.setAttribute("name", "Ds_MerchantParameters");
-field.setAttribute("value", result.Ds_MerchantParameters);
-form.appendChild(field);
-
-var field = document.createElement("input");
-field.setAttribute("type", "hidden");
-field.setAttribute("name", "Ds_Signature");
-field.setAttribute("value", result.Ds_Signature);
-form.appendChild(field);
+for(k in result) {
+    var field = document.createElement("input");
+    field.setAttribute("type", "hidden");
+    field.setAttribute("name", k);
+    field.setAttribute("value", result[k]);
+    form.appendChild(field);
+}
 
 document.body.appendChild(form);
 form.submit();
@@ -106,13 +92,18 @@ The official recommended mechanism is a plain old HTML form as below, which is a
 ### Checking a response
 
 ```javascript
-// Check a response
-const { checkResponseParameters } = require("redsys-pos");
+// Previously initialized
+
+// const RedSys = require('redsys-pos');
+// const MERCHANT_KEY = "sq7HjrUOBfKmC576ILgskD5srU870gJ7";
+// const redsys = new RedSys(MERCHANT_KEY);
+
+// Check the response
 
 const merchantParams = "eyJEc19EYXRlIjoiMjAlMkYxMCUyRjIwMTciLCJEc19Ib3VyIjoiMTclM0EyMyIsIkRzX1NlY3VyZVBheW1lbnQiOiIwIiwiRHNfQW1vdW50IjoiMTAwIiwiRHNfQ3VycmVuY3kiOiI5NzgiLCJEc19PcmRlciI6IjAwMDA5NjU1RDg0IiwiRHNfTWVyY2hhbnRDb2RlIjoiMzI3MjM0Njg4IiwiRHNfVGVybWluYWwiOiIwMDEiLCJEc19SZXNwb25zZSI6Ijk5MTUiLCJEc19UcmFuc2FjdGlvblR5cGUiOiIwIiwiRHNfTWVyY2hhbnREYXRhIjoiIiwiRHNfQXV0aG9yaXNhdGlvbkNvZGUiOiIrKysrKysiLCJEc19Db25zdW1lckxhbmd1YWdlIjoiMSJ9";
-const signature = "vrUsaNbxfonyn4ONUos6oosUaTBY0_SGoKDel6qsHqk=";
+const signature = "vrUsaNbxfonyn4ONUos6oosUaTBY0_SGoKDel6qsHqk";
 
-const result = checkResponseParameters(merchantParams, signature);
+const result = redsys.checkResponseParameters(merchantParams, signature);
 console.log(result);
 ```
 
@@ -120,21 +111,19 @@ If successful, this will print:
 
 ```javascript
 {
-  Ds_Date: '20%2F10%2F2017',
-  Ds_Hour: '18%3A20',
-  Ds_SecurePayment: '1',
-  Ds_Amount: '100',
-  Ds_Currency: '978',
-  Ds_Order: '00007921799',
-  Ds_MerchantCode: '327234688',
-  Ds_Terminal: '001',
-  Ds_Response: '0000',
-  Ds_TransactionType: '0',
-  Ds_MerchantData: '',
-  Ds_AuthorisationCode: '678746',
-  Ds_ConsumerLanguage: '1',
-  Ds_Card_Country: '724',
-  Ds_Card_Brand: '1'
+    Ds_Date: '20%2F10%2F2017',
+    Ds_Hour: '17%3A23',
+    Ds_SecurePayment: '0',
+    Ds_Amount: '100',
+    Ds_Currency: '978',
+    Ds_Order: '00009655D84',
+    Ds_MerchantCode: '327234688',
+    Ds_Terminal: '001',
+    Ds_Response: '9915',
+    Ds_TransactionType: '0',
+    Ds_MerchantData: '',
+    Ds_AuthorisationCode: '++++++',
+    Ds_ConsumerLanguage: '1'
 }
 ```
 
@@ -142,13 +131,12 @@ If successful, this will print:
 If an invalid response or signature is provided:
 
 ```javascript
-// Check a response
-const { checkResponseParameters } = require("redsys-pos");
+// Check the response
 
 const merchantParams = "eyJEc19EYXRlIjoiMjAlMkYxMCUyRjIwMTciLCJEc19Ib3VyIjoiMTclM0EyMyIsIkRzX1NlY3VyZVBheW1lbnQiOiIwIiwiRHNfQW1vdW50IjoiMTAwIiwiRHNfQ3VycmVuY3kiOiI5NzgiLCJEc19PcmRlciI6IjAwMDA5NjU1RDg0IiwiRHNfTWVyY2hhbnRDb2RlIjoiMzI3MjM0Njg4IiwiRHNfVGVybWluYWwiOiIwMDEiLCJEc19SZXNwb25zZSI6Ijk5MTUiLCJEc19UcmFuc2FjdGlvblR5cGUiOiIwIiwiRHNfTWVyY2hhbnREYXRhIjoiIiwiRHNfQXV0aG9yaXNhdGlvbkNvZGUiOiIrKysrKysiLCJEc19Db25zdW1lckxhbmd1YWdlIjoiMSJ9";
-const invalidSignature = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=";
+const invalidSignature = "invalid-signature";
 
-result = checkResponseParameters(merchantParams, invalidSignature);
+result = redsys.checkResponseParameters(merchantParams, invalidSignature);
 console.log(result);
 ```
 

@@ -2,7 +2,7 @@
   "name": "redsys-pos",
   "version": "1.0.0-beta1",
   "description": "Node JS library to ease the communication with RedSys point of sales",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "precommit": "lint-staged"
   },
