@@ -72,10 +72,22 @@ class RedSys {
       throw new Error("Payload must be a base-64 encoded string");
     else if (!givenSignature) throw new Error("The signature is required");
 
-    const merchantParams = JSON.parse(
-      Buffer.from(strPayload, "base64").toString()
-    );
+    // FIX: Query string parsers are not expected to detect trailing "=="
+    // but requests from RedSys are signed with the payload containing them
+    //
+    // Add them if they are expected to be there
+
+    const suffix = base64url.toBase64(strPayload).match(/=*$/);
+    if (suffix && suffix[0]) {
+      strPayload += suffix[0];
+    }
+
+    var merchantParams = JSON.parse(base64url.decode(strPayload, "utf8"));
     if (!merchantParams || !merchantParams.Ds_Order) return null; // invalid response
+    // decode url encoded values
+    for (let field in merchantParams) {
+      merchantParams[field] = decodeURIComponent(merchantParams[field]);
+    }
 
     const derivateKey = this.encrypt(merchantParams.Ds_Order);
     const localSignature = this.sign(strPayload, derivateKey);
@@ -105,7 +117,7 @@ class RedSys {
     var crypt = crypto.createCipheriv("des-ede3-cbc", keyBuffer, iv);
     crypt.setAutoPadding(false);
     return (
-      crypt.update(toBuffer(strPayload, 8), "utf8", "base64") +
+      crypt.update(toBuffer(strPayload), "utf8", "base64") +
       crypt.final("base64")
     );
   }

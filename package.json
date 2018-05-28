@@ -1,6 +1,6 @@
 {
   "name": "redsys-pos",
-  "version": "1.0.0-beta1",
+  "version": "1.0.0-beta2",
   "description": "Node JS library to ease the communication with RedSys point of sales",
   "main": "src/index.js",
   "scripts": {

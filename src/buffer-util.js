@@ -1,4 +1,4 @@
-exports.toBuffer = function(payload, blockSize) {
+exports.toBuffer = function(payload, blockSize = 8) {
   if (typeof payload === "string" || payload.constructor !== Buffer) {
     payload = new Buffer(payload, "utf8");
   }
@@ -8,7 +8,7 @@ exports.toBuffer = function(payload, blockSize) {
   return Buffer.concat([payload, align]);
 };
 
-exports.toString = function(buffer, blockSize) {
+exports.toString = function(buffer, blockSize = 8) {
   var idx = buffer.length;
   const minStart = idx - blockSize;
   while (idx >= 0 && idx >= minStart) {
