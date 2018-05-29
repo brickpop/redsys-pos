@@ -70,7 +70,7 @@ exports.makePaymentParameters = function ({ amount, orderReference, merchantName
 
   if (Merchant_DateFrecuency && Merchant_ChargeExpiryDate) {
     paramsObj.DS_MERCHANT_DATEFRECUENCY = Merchant_DateFrecuency
-    paramsObj.DS_MERCHANT_EXPIRYDATE = Merchant_ChargeExpiryDate
+    paramsObj.DS_MERCHANT_CHARGEEXPIRYDATE = Merchant_ChargeExpiryDate
   }
 
   const payload = JSON.stringify(paramsObj)
