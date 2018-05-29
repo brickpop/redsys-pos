@@ -72,14 +72,20 @@ class RedSys {
       throw new Error("Payload must be a base-64 encoded string");
     else if (!givenSignature) throw new Error("The signature is required");
 
-    // FIX: Query string parsers are not expected to detect trailing "=="
-    // but requests from RedSys are signed with the payload containing them
+    // TRICK/FIX:
+    // URL query string parsers are not expected to detect trailing "=="
+    // as RedSys is providing them.
     //
-    // Add them if they are expected to be there
+    // Add them if they are expected to appear at the end
 
-    const suffix = base64url.toBase64(strPayload).match(/=*$/);
-    if (suffix && suffix[0]) {
-      strPayload += suffix[0];
+    var incomingSuffix = strPayload.match(/=*$/);
+    if (!incomingSuffix) {
+      // we might need to reappend it
+      let expectedSuffix = base64url.toBase64(strPayload).match(/=*$/);
+
+      if (expectedSuffix && expectedSuffix[0]) {
+        strPayload += expectedSuffix[0];
+      }
     }
 
     var merchantParams = JSON.parse(base64url.decode(strPayload, "utf8"));
