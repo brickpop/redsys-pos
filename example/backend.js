@@ -1,9 +1,9 @@
-var redsysPos = require('redsys-pos')
+const redsysPos = require('redsys-pos')
 
 const MERCHANT_KEY = "sq7HjrUOBfKmC576ILgskD5srU870gJ7"
 redsysPos.initialize(MERCHANT_KEY)
 
-var obj = {
+const obj = {
   amount: '100', // cents
   orderReference: '1508428360',
   merchantName: "INTEGRATION TEST SHOP",
