@@ -127,6 +127,8 @@ If successful, this will print:
 }
 ```
 
+**Very important** Make sure that you handle properly the trailing "=" symbols of the Base64 payload. More on the FAQ.
+
 ### Checking an invalid response/signature
 If an invalid response or signature is provided:
 
@@ -175,6 +177,13 @@ This will print:
 ```
 null
 ```
+
+## FAQ
+
+***Sometimes, random requests may fail, even if parameters are just what comes from RedSys***
+
+* If you are getting the `Ds_MerchantParameters` and `Ds_Signature` from a URL, you may have trouble parsing the data properly. RedSys appends the Base64 payload without escaping the "=" symbols, and query string parsers may treat them as if they were a parameter assignment like `?id=123&test=456`.
+* You are responsible of parsing and handling the entire payload, or otherwise the deciding will not match.
 
 ## Testing
 
