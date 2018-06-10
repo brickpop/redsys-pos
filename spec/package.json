@@ -1,0 +1,16 @@
+{
+  "name": "redsys-pos-test",
+  "version": "1.0.0",
+  "description": "Separate package.json to avoid bloatware on node_modules",
+  "scripts": {
+    "test": "mocha ./*"
+  },
+  "author": "Jordi Moraleda <jordi@tvrbo.pro>",
+  "license": "MIT",
+  "dependencies": {
+    "chai": "^4.1.2",
+    "eslint": "^4.19.1",
+    "mocha": "^3.3.0",
+    "puppeteer": "^1.5.0"
+  }
+}

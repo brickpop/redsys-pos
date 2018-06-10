@@ -1,11 +1,11 @@
 {
   "name": "redsys-pos",
-  "version": "1.0.0-beta4",
+  "version": "1.0.0",
   "description": "Node JS library to ease the communication with RedSys point of sales",
   "main": "src/index.js",
   "scripts": {
     "precommit": "lint-staged",
-    "test": "mocha spec/*"
+    "test": "cd spec && npm i && npm t"
   },
   "keywords": [
     "redsys",
@@ -29,11 +29,9 @@
   },
   "devDependencies": {
     "babel-eslint": "^8.2.3",
-    "chai": "^4.1.2",
     "eslint": "^4.19.1",
     "husky": "^0.14.3",
     "lint-staged": "^7.0.0",
-    "mocha": "^3.3.0",
     "prettier": "^1.13.0"
   },
   "lint-staged": {

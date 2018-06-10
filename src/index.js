@@ -10,12 +10,20 @@ const {
 } = require("./lib.js");
 
 class RedSys {
+  /**
+   *
+   * @param {string} merchantSecretKey
+   */
   constructor(merchantSecretKey) {
     if (!merchantSecretKey)
       throw new Error("The merchant secret key is mandatory");
     this.merchantSecretKey = merchantSecretKey;
   }
 
+  /**
+   *
+   * @param {object} params
+   */
   makePaymentParameters({
     amount,
     orderReference,
@@ -66,27 +74,24 @@ class RedSys {
     };
   }
 
+  /**
+   *
+   * @param {string} strPayload Base64-URL representation of the payload
+   * @param {string} givenSignature Base64-URL representation of the signature
+   *
+   * IMPORTANT: URL query string parsers ARE NOT expected to detect
+   * trailing "==" symbols at the end, as these are a reserved character.
+   *
+   * It is the developer's responsibility to properly parse and provide
+   * the full payload and signature, or otherwise, the signature comparison
+   * will fail due to a mismatch between the expected and the actual payload
+   * received.
+   */
   checkResponseParameters(strPayload, givenSignature) {
     if (!strPayload) throw new Error("The payload parameter is required");
     else if (typeof strPayload != "string")
       throw new Error("Payload must be a base-64 encoded string");
     else if (!givenSignature) throw new Error("The signature is required");
-
-    // TRICK/FIX:
-    // URL query string parsers are not expected to detect trailing "=="
-    // as RedSys is providing them.
-    //
-    // Add them if they are expected to appear at the end
-
-    var incomingSuffix = strPayload.match(/=*$/);
-    if (!incomingSuffix) {
-      // we might need to reappend it
-      let expectedSuffix = base64url.toBase64(strPayload).match(/=*$/);
-
-      if (expectedSuffix && expectedSuffix[0]) {
-        strPayload += expectedSuffix[0];
-      }
-    }
 
     var merchantParams = JSON.parse(base64url.decode(strPayload, "utf8"));
     if (!merchantParams || !merchantParams.Ds_Order) return null; // invalid response
@@ -102,6 +107,10 @@ class RedSys {
     else return merchantParams;
   }
 
+  /**
+   *
+   * @param {string} code The result code of a given response
+   */
   static getResponseCodeMessage(code) {
     if (!code || typeof code !== "string") return null;
     code = code.replace(/^0*/, "");

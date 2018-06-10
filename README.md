@@ -176,6 +176,14 @@ This will print:
 null
 ```
 
+## Testing
+
+To test the component, run `npm test`. 
+
+End to end tests are performed with the help of Puppeteer. Unit tests are provided as well. At the time, Puppeteer only runs as expected with `{ headless: false }`. 
+
+Note that in order to prevent bloatware from reaching the development `node_modules` folder, a separate `package.json` file is used on the `spec` folder. 
+
 ## About
 
 The present library is a work of Jordi Moraleda and Joel Moreno

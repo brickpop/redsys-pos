@@ -2,12 +2,13 @@ const chai = require("chai");
 const RedSys = require("..");
 
 const { expect } = chai;
-const secretKey = "sq7HjrUOBfKmC576ILgskD5srU870gJ7";
+const MERCHANT_KEY = "sq7HjrUOBfKmC576ILgskD5srU870gJ7";
+const MERCHANT_CODE = "327234688";
 
-describe("RedSys POS", () => {
+describe("RedSys (static data)", () => {
   var redsys;
   before(() => {
-    redsys = new RedSys(secretKey);
+    redsys = new RedSys(MERCHANT_KEY);
   });
 
   describe("init", () => {
@@ -51,7 +52,7 @@ describe("RedSys POS", () => {
         amount: "1000",
         orderReference: "12345678",
         merchantName: "SPEC SHOP",
-        merchantCode: "327234688",
+        merchantCode: MERCHANT_CODE,
         currency: RedSys.CURRENCIES.EUR,
         transactionType: RedSys.TRANSACTION_TYPES.AUTHORIZATION,
         terminal: "1",
@@ -95,9 +96,10 @@ describe("RedSys POS", () => {
 
   describe("RedSys response decoding and validating", () => {
     it("should decode valid responses", () => {
+      // First
       var merchantParams =
         "eyJEc19EYXRlIjoiMjglMkYwNSUyRjIwMTgiLCJEc19Ib3VyIjoiMTAlM0E0NCIsIkRzX1NlY3VyZVBheW1lbnQiOiIxIiwiRHNfQW1vdW50IjoiNjcwMCIsIkRzX0N1cnJlbmN5IjoiOTc4IiwiRHNfT3JkZXIiOiIwMDAwRkI5QTE3MiIsIkRzX01lcmNoYW50Q29kZSI6IjMzNjcwNDY1NSIsIkRzX1Rlcm1pbmFsIjoiMDAxIiwiRHNfUmVzcG9uc2UiOiIwMDAwIiwiRHNfVHJhbnNhY3Rpb25UeXBlIjoiMCIsIkRzX01lcmNoYW50RGF0YSI6IiIsIkRzX0F1dGhvcmlzYXRpb25Db2RlIjoiMjE4MDQ4IiwiRHNfQ29uc3VtZXJMYW5ndWFnZSI6IjEiLCJEc19DYXJkX0NvdW50cnkiOiI3MjQiLCJEc19DYXJkX0JyYW5kIjoiMSJ9";
-      const signature = "3Fg6oB4URw8ykL-hkvdYPW4RKvT3ikz6qAv6WMHFH2I=";
+      var signature = "3Fg6oB4URw8ykL-hkvdYPW4RKvT3ikz6qAv6WMHFH2I=";
 
       expect(
         redsys.checkResponseParameters(merchantParams, signature)
@@ -117,6 +119,54 @@ describe("RedSys POS", () => {
         Ds_ConsumerLanguage: "1",
         Ds_Card_Country: "724",
         Ds_Card_Brand: "1"
+      });
+
+      // Second
+      merchantParams =
+        "eyJEc19EYXRlIjoiMTAlMkYwNiUyRjIwMTgiLCJEc19Ib3VyIjoiMjAlM0EyMCIsIkRzX1NlY3VyZVBheW1lbnQiOiIwIiwiRHNfQW1vdW50IjoiNjAwMCIsIkRzX0N1cnJlbmN5IjoiOTc4IiwiRHNfT3JkZXIiOiIwMDAwNTcyNzkxRCIsIkRzX01lcmNoYW50Q29kZSI6IjM0NjM4MTkwOCIsIkRzX1Rlcm1pbmFsIjoiMDAxIiwiRHNfUmVzcG9uc2UiOiI5OTE1IiwiRHNfTWVyY2hhbnREYXRhIjoiIiwiRHNfVHJhbnNhY3Rpb25UeXBlIjoiMCIsIkRzX0NvbnN1bWVyTGFuZ3VhZ2UiOiIxIiwiRHNfRXJyb3JDb2RlIjoiU0lTOTkxNSIsIkRzX0F1dGhvcmlzYXRpb25Db2RlIjoiKysrKysrIn0=";
+      signature = "qJ0OTUI5YMuyHEdt0uxVZ-nlYFqKlMXXlc9WT-4auCs=";
+
+      expect(
+        redsys.checkResponseParameters(merchantParams, signature)
+      ).to.deep.equal({
+        Ds_Date: "10/06/2018",
+        Ds_Hour: "20:20",
+        Ds_SecurePayment: "0",
+        Ds_Amount: "6000",
+        Ds_Currency: "978",
+        Ds_Order: "0000572791D",
+        Ds_MerchantCode: "346381908",
+        Ds_Terminal: "001",
+        Ds_Response: "9915",
+        Ds_MerchantData: "",
+        Ds_TransactionType: "0",
+        Ds_ConsumerLanguage: "1",
+        Ds_ErrorCode: "SIS9915",
+        Ds_AuthorisationCode: "++++++"
+      });
+
+      // Third
+      merchantParams =
+        "eyJEc19EYXRlIjoiMTAlMkYwNiUyRjIwMTgiLCJEc19Ib3VyIjoiMjAlM0EyNiIsIkRzX1NlY3VyZVBheW1lbnQiOiIwIiwiRHNfQW1vdW50IjoiNjAwMCIsIkRzX0N1cnJlbmN5IjoiOTc4IiwiRHNfT3JkZXIiOiIwMDAwNTg0NDFDMCIsIkRzX01lcmNoYW50Q29kZSI6IjM0NjM4MTkwOCIsIkRzX1Rlcm1pbmFsIjoiMDAxIiwiRHNfUmVzcG9uc2UiOiI5OTE1IiwiRHNfTWVyY2hhbnREYXRhIjoiIiwiRHNfVHJhbnNhY3Rpb25UeXBlIjoiMCIsIkRzX0NvbnN1bWVyTGFuZ3VhZ2UiOiIxIiwiRHNfRXJyb3JDb2RlIjoiU0lTOTkxNSIsIkRzX0F1dGhvcmlzYXRpb25Db2RlIjoiKysrKysrIn0=";
+      signature = "LQDIuaVKbZx2pXe0nvr4EQ2snHuPyjcLtAzEgcyv8hc=";
+
+      expect(
+        redsys.checkResponseParameters(merchantParams, signature)
+      ).to.deep.equal({
+        Ds_Date: "10/06/2018",
+        Ds_Hour: "20:26",
+        Ds_SecurePayment: "0",
+        Ds_Amount: "6000",
+        Ds_Currency: "978",
+        Ds_Order: "000058441C0",
+        Ds_MerchantCode: "346381908",
+        Ds_Terminal: "001",
+        Ds_Response: "9915",
+        Ds_MerchantData: "",
+        Ds_TransactionType: "0",
+        Ds_ConsumerLanguage: "1",
+        Ds_ErrorCode: "SIS9915",
+        Ds_AuthorisationCode: "++++++"
       });
     });
 
