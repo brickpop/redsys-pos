@@ -2,6 +2,9 @@ const chai = require("chai");
 const { expect } = chai;
 const RedSys = require("..");
 const puppeteer = require("puppeteer");
+const http = require("http");
+const port = 4000;
+var server;
 
 const MERCHANT_KEY = "sq7HjrUOBfKmC576ILgskD5srU870gJ7";
 const MERCHANT_CODE = "327234688";
@@ -10,7 +13,20 @@ const TERMINAL = "1";
 const pos = new RedSys(MERCHANT_KEY);
 
 describe("RedSys (end to end)", function() {
-  this.timeout(25000);
+  this.timeout(35000);
+
+  beforeEach(cb => {
+    server = http.createServer((req, res) => res.end(""));
+    server.listen(port, err => {
+      cb(err);
+    });
+  });
+
+  afterEach(cb => {
+    server.close(err => {
+      cb(err);
+    });
+  });
 
   it("should authorize a correct payment with the testing credit card", async function() {
     var browser;
@@ -29,8 +45,8 @@ describe("RedSys (end to end)", function() {
         transactionType: RedSys.TRANSACTION_TYPES.AUTHORIZATION,
         terminal: TERMINAL,
         merchantURL: "http://www.my-shop.com/",
-        successURL: "http://localhost:8080/success",
-        errorURL: "http://localhost:8080/error"
+        successURL: `http://localhost:${port}/success`,
+        errorURL: `http://localhost:${port}/error`
       };
       const req = pos.makePaymentParameters(obj);
 
@@ -81,12 +97,12 @@ describe("RedSys (end to end)", function() {
       await new Promise(resolve => setTimeout(resolve, 500));
       const resultUrl = await page.evaluate("location.href");
 
-      expect(resultUrl).to.be.not.null;
+      expect(resultUrl).to.have.length;
 
       const matches = resultUrl.match(
         /\?Ds_SignatureVersion=HMAC_SHA256_V1&Ds_MerchantParameters=([^&]+)&Ds_Signature=(.+)$/
       );
-      expect(matches).to.be.not.null;
+      expect(matches).to.be.an.instanceOf(Array);
       expect(matches[0]).to.be.not.null;
       expect(matches[1]).to.be.not.null;
       expect(matches[2]).to.be.not.null;
@@ -145,8 +161,8 @@ describe("RedSys (end to end)", function() {
         transactionType: RedSys.TRANSACTION_TYPES.AUTHORIZATION,
         terminal: TERMINAL,
         merchantURL: "http://www.my-shop.com/",
-        successURL: "http://localhost:8080/success",
-        errorURL: "http://localhost:8080/error"
+        successURL: `http://localhost:${port}/success`,
+        errorURL: `http://localhost:${port}/error`
       };
       const req = pos.makePaymentParameters(obj);
 
@@ -184,12 +200,12 @@ describe("RedSys (end to end)", function() {
       await new Promise(resolve => setTimeout(resolve, 500));
       const resultUrl = await page.evaluate("location.href");
 
-      expect(resultUrl).to.be.not.null;
+      expect(resultUrl).to.have.length;
 
       const matches = resultUrl.match(
         /\?Ds_SignatureVersion=HMAC_SHA256_V1&Ds_MerchantParameters=([^&]+)&Ds_Signature=(.+)$/
       );
-      expect(matches).to.be.not.null;
+      expect(matches).to.be.an.instanceOf(Array);
       expect(matches[0]).to.be.not.null;
       expect(matches[1]).to.be.not.null;
       expect(matches[2]).to.be.not.null;
@@ -250,8 +266,8 @@ describe("RedSys (end to end)", function() {
         transactionType: RedSys.TRANSACTION_TYPES.AUTHORIZATION,
         terminal: TERMINAL,
         merchantURL: "http://www.my-shop.com/",
-        successURL: "http://localhost:8080/success",
-        errorURL: "http://localhost:8080/error"
+        successURL: `http://localhost:${port}/success`,
+        errorURL: `http://localhost:${port}/error`
       };
       const req = pos.makePaymentParameters(obj);
 
@@ -284,12 +300,12 @@ describe("RedSys (end to end)", function() {
       await new Promise(resolve => setTimeout(resolve, 500));
       const resultUrl = await page.evaluate("location.href");
 
-      expect(resultUrl).to.be.not.null;
+      expect(resultUrl).to.have.length;
 
       const matches = resultUrl.match(
         /\?Ds_SignatureVersion=HMAC_SHA256_V1&Ds_MerchantParameters=([^&]+)&Ds_Signature=(.+)$/
       );
-      expect(matches).to.be.not.null;
+      expect(matches).to.be.an.instanceOf(Array);
       expect(matches[0]).to.be.not.null;
       expect(matches[1]).to.be.not.null;
       expect(matches[2]).to.be.not.null;
